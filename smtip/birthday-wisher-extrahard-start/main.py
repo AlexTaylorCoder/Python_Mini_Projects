@@ -12,9 +12,14 @@ import datetime as dt
 import pandas as pd
 from random import randint
 import smtplib
+from dotenv import load_dotenv
+import os
 
-my_email = "pythontestuser515@gmail.com"
-password = "dbcuwleosfqrrydr"
+load_dotenv()
+
+my_email = os.getenv("my_email")
+password = os.getenv("password")
+to_email = os.getenv("to_email")
 
 #Query database
 now = dt.datetime.now()
@@ -34,5 +39,5 @@ if not birthday_user.empty:
     with smtplib.SMTP("smtp.gmail.com",port=587) as c:
         c.starttls()
         c.login(user=my_email, password=password)
-        c.sendmail(from_addr=my_email,to_addrs=sending_to,msg=f"Subject:Happy Birthday {name}!\n\n{updated_message}")
+        c.sendmail(from_addr=my_email,to_addrs=to_email,msg=f"Subject:Happy Birthday {name}!\n\n{updated_message}")
 

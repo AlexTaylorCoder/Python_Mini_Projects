@@ -1,10 +1,14 @@
 import requests
 import smtplib
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
-EMAIL = "pythontestuser515@gmail.com"
-password = "dbcuwleosfqrrydr"
+EMAIL = os.getenv("EMAIL")
+password = os.getenv("PASSWORD")
 
 
 AMAZON_ENDPOINT = "https://www.amazon.com/Pink-Miracle-Cleaner-Leather-Sneakers/dp/B00A7NDT3A/ref=sxin_15_pa_sp_search_thematic_sspa?content-id=amzn1.sym.a5710394-3d57-4d27-93ab-3d4a038712c2%3Aamzn1.sym.a5710394-3d57-4d27-93ab-3d4a038712c2&cv_ct_cx=shoe%2Bcleaner&keywords=shoe%2Bcleaner&pd_rd_i=B00A7NDT3A&pd_rd_r=38c9a2eb-2420-4f92-bfc0-2d6e466684e0&pd_rd_w=PgJSS&pd_rd_wg=ql1n0&pf_rd_p=a5710394-3d57-4d27-93ab-3d4a038712c2&pf_rd_r=XK7Y1KZ6X8KDA3PFZ23D&qid=1674507834&s=home-garden&sprefix=shoe%2Bcl%2Cgarden%2C76&sr=1-1-3bc0c0df-c7bd-4bd8-89e8-c7f4dd05d048-spons&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUEzSjFHMDFRSkFKMEZEJmVuY3J5cHRlZElkPUEwMTg5MzQwMUxYTlZNTVlOQUZIRyZlbmNyeXB0ZWRBZElkPUEwMDQzNjAzMktQVU41VkhPREhMOSZ3aWRnZXROYW1lPXNwX3NlYXJjaF90aGVtYXRpYyZhY3Rpb249Y2xpY2tSZWRpcmVjdCZkb05vdExvZ0NsaWNrPXRydWU&th=1&psc=1"

@@ -2,9 +2,15 @@ import datetime as dt
 import smtplib
 from random import randint
 import calendar
+from dotenv import load_dotenv
+import os
 
-my_email = "pythontestuser515@gmail.com"
-password = "dbcuwleosfqrrydr"
+load_dotenv()
+
+my_email = os.getenv("my_email")
+to_email = os.getenv("to_email")
+password = os.getenv("password")
+
 
 now = dt.datetime.now()
 # print(now.strftime("%H:%M:%S:%MS"))
@@ -21,6 +27,6 @@ with smtplib.SMTP("smtp.gmail.com",port=587) as c:
     c.login(user=my_email,password=password)
     c.sendmail(
         from_addr=my_email,
-        to_addrs="alextaylor515@gmail.com",
+        to_addrs=to_email,
         msg=f"Subject:Quote of {weekday}\n\nquote"
     )
