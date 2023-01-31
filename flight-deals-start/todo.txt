@@ -1,0 +1,15 @@
+1. Implement GUI
+    - Layout
+    - Title and logo
+    - Design if Figma first
+
+2. Implement saved flights
+    - Make second google sheet with saved flights cols --> dest, price, depart, arrive, flightID
+
+3. Switch between save and recommended GUI
+
+3. Have link with airline for flight
+    - Use BS4 to find relevant link for flight 
+    - Include link with flight element
+
+4. Implement email and text notifications
