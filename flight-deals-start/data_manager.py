@@ -10,24 +10,47 @@ class DataManager:
         response = requests.get(ENDPOINT)
         response.raise_for_status()
         return response.json()["sheet1"]
-    def add_city(name):
-        DataManager.add_iata()
-        code = FlightSearch.get_city(name)["locations"][0]["code"]
+    def cityPresence(name):
+        for row,item in enumerate(DataManager.get()):
+            print(item)
+            if item["city"] == name:
+                return row
+        return False
+    def add_city(name):            
+        code = FlightSearch.get_city_code(name)
+        flightData = FlightSearch.search_flight_by_iata(code_from="NYC",code_to=code,limit=1)
+
+        cheapest = flightData[0]
+        price = cheapest["price"]
+        dateDeparture = cheapest["route"][0]["local_departure"]
+        dateReturn = cheapest["route"][-1]["local_arrival"]
+
+        #Checks for duplicate city
+        isDuplicate = DataManager.cityPresence(name)
+        if isDuplicate:
+            return DataManager.patch_content(row=isDuplicate,price=price,depart=dateDeparture,arrive=dateReturn)
+
         body = {
             "sheet1": {
                 "city":name,
-                "iataCode":code
+                "iataCode":code,
+                "lowestPrice":price,
+                "dateDeparture": format_date(dateDeparture),
+                "dateReturn": format_date(dateReturn)
+
             }
         }
         response = requests.post(ENDPOINT,json=body)
         response.raise_for_status()
         return response.json()
+
     def update_city_details(code,price,depart,arrive):
         DataManager.add_iata()
         sheet = DataManager.get()
         for row,item in enumerate(sheet):
             if item["iataCode"] == code:
                 DataManager.patch_content(row,price,depart,arrive)
+                
 
     def update_price_all():
         DataManager.add_iata()
@@ -42,7 +65,6 @@ class DataManager:
 
     def add_iata():
         sheet = DataManager.get()
-        print(sheet)
         for i,item in enumerate(sheet):
             if not item["iataCode"]:
                 if "city" in item:

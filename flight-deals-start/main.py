@@ -18,23 +18,38 @@ from datetime import datetime
 def add_city(dest,dateFrom=None, dateTo=None, price=None):
     #Add city with lowest price
     flightData = FlightSearch.search_flight_location(fly_from="New York", fly_to=dest)
-
-    flights = []
     cheapest = flightData[0]
+    
+    #Add city to watchlist and add new flight need to be seperate functionality
+    DataManager.add_city(dest)
     DataManager.update_city_details(code=cheapest["cityCodeTo"], price=cheapest["price"],depart=format_date(cheapest["route"][0]["local_departure"]),arrive=format_date(cheapest["route"][-1]["local_arrival"]))
 
+    return simplifyFlightData(flightData)
+
+def simplifyFlightData(flightData):
+    flights = []
     for i,flight in enumerate(flightData):
-        flightObj = {
-            "airportFrom":flight["flyFrom"],
-            "airportTo":flight["flyTo"],
-            "nights":flight["nightsInDest"],
-            "price":flight["price"],
-            "availability":flight["availability"]["seats"],
-            "airlines":flight["airlines"],
-            "path":[route_data(route) for route in flight["route"]],
-            "number":i
-        }
-        flights.append(flightObj)
+            flightObj = {
+                "airportFrom":flight["flyFrom"],
+                "airportTo":flight["flyTo"],
+                "cityTo":flight["cityTo"],
+                "nights":flight["nightsInDest"],
+                "price":flight["price"],
+                "availability":flight["availability"]["seats"],
+                "airlines":flight["airlines"],
+                "path":[route_data(route) for route in flight["route"]],
+                "number":i
+            }
+            flights.append(flightObj)
+    return flights
+
+def load_cheapest():
+    print("ran")
+    flightData = FlightSearch.search_cheapest_flights(fly_from="NYC")
+    print("ran")
+
+    return simplifyFlightData(flightData)
+
 
 def route_data(route):
     arrivalTime = format_date(route["local_arrival"])
@@ -49,7 +64,6 @@ def route_data(route):
 def format_date(date):
     date = datetime.fromisoformat(date[:-1])
     return date.strftime('%m/%d/%y %H:%M')
-
 
 def update_sheet_prices():
     DataManager.update_price_all()

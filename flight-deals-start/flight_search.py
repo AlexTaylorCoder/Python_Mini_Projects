@@ -35,7 +35,8 @@ class FlightSearch:
     def get_city_code(city):
         return FlightSearch.get_city(city)["locations"][0]["code"]
 
-    def search_cheapest_flights(fly_from,date_from=dt.datetime.now() + dt.timedelta(days=60),date_to=dt.datetime.now() + dt.timedelta(days=80), fly_to=None):
+    def search_cheapest_flights(fly_from,date_from=dt.datetime.now() + dt.timedelta(days=60),date_to=dt.datetime.now() + dt.timedelta(days=80), price=600):
+        
         #Find cheapest
         date_from =date_from.strftime("%d/%m/%Y")
         date_to = date_to.strftime("%d/%m/%Y")
@@ -45,13 +46,13 @@ class FlightSearch:
             "dateTo":date_to,
             "nights_in_dst_from":10,
             "nights_in_dst_to":30,
-            "price_to":600,
-            "flight_type":"round"
+            "price_to":price,
+            "flight_type":"round",
+            "limit":10
         }
-        if fly_to:
-            params[fly_to]=fly_to
 
-        response = requests.get(SEARCH_ENDPOINT,headers=headers,params=params)["data"]
+        response = requests.get(SEARCH_ENDPOINT,headers=headers,params=params)
+        return response.json()["data"]
 
     def search_flight_location(fly_from,fly_to,date_from=dt.datetime.now() + dt.timedelta(days=60),date_to=dt.datetime.now() + dt.timedelta(days=80)):
         #Fly from must be code
@@ -61,7 +62,7 @@ class FlightSearch:
         return FlightSearch.search_flight(code_from=code_from,code_to=code_to,date_from=date_from,date_to=date_to)
 
 
-    def search_flight(code_from,code_to,date_from=dt.datetime.now() + dt.timedelta(days=60),date_to=dt.datetime.now() + dt.timedelta(days=80)):
+    def search_flight(code_from,code_to,date_from=dt.datetime.now() + dt.timedelta(days=60),date_to=dt.datetime.now() + dt.timedelta(days=80),limit=5):
         if code_from == code_to:
             return False
         date_from =date_from.strftime("%d/%m/%Y")
@@ -75,13 +76,13 @@ class FlightSearch:
             "nights_in_dst_to":30,
             "price_to":2000,
             "flight_type":"round",
-            "limit":5
+            "limit":limit
         }
 
         response = requests.get(SEARCH_ENDPOINT,headers=headers,params=params)
         return response.json()["data"]
 
-    def search_flight_by_iata(code_from,code_to,date_from=dt.datetime.now() + dt.timedelta(days=60),date_to=dt.datetime.now() + dt.timedelta(days=80)):
-        return FlightSearch.search_flight(code_from,code_to,date_from,date_to)
+    def search_flight_by_iata(code_from,code_to,date_from=dt.datetime.now() + dt.timedelta(days=60),date_to=dt.datetime.now() + dt.timedelta(days=80),limit=None):
+        return FlightSearch.search_flight(code_from,code_to,date_from,date_to,limit)
 
 

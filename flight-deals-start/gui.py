@@ -1,10 +1,17 @@
 from customtkinter import *
-import tkinter
-from tkcalendar import Calendar, DateEntry
-from main import add_city, route_data, update_sheet_prices
+from tkcalendar import DateEntry
+from main import add_city, route_data, update_sheet_prices,load_cheapest
+from data_manager import DataManager
+from scrollableFrame import ScrollableFrame
 
 set_appearance_mode("System")
 set_default_color_theme("blue")
+
+class scrollTabView(CTkTabview):
+    def __init__(self):
+        super().__init__()
+        self.sFrame = ScrollableFrame(self)    
+
 
 class App(CTk):
     def __init__(self):
@@ -16,60 +23,121 @@ class App(CTk):
         self.label = CTkLabel(master=self,text="Random")
         self.email_notif = CTkCheckBox(master=self)
         self.text_notif = CTkCheckBox(master=self)
-        self.dateFrom = DateEntry(self,width= 16, background= "black", foreground= "white",bd=2,font="Arial 14", selectmode='day',cursor="hand1")
+        self.dateFrom = DateEntry(self,background= "black", foreground= "white",bd=2,font="Arial 14", selectmode='day',cursor="hand1")
         self.dateFrom.delete(0,END)
         self.dateFrom.insert(0,"Departure Date")
-        self.dateTo = DateEntry(self,width= 16, background= "black", foreground= "white",bd=2,font="Arial 14", selectmode='day',cursor="hand1")
+        self.dateTo = DateEntry(self,background= "black", foreground= "white",bd=2,font="Arial 14", selectmode='day',cursor="hand1")
         self.dateTo.delete(0,END)
         self.dateTo.insert(0,"Rearrival Date")
         self.city_input = CTkEntry(master=self,placeholder_text="City")
-        self.price_input = CTkEntry(master=self,placeholder_text="Max $")
-        self.searchButton = CTkButton(master=self,text="Search",width=200,height=50,command=self.read_inputs)
+        self.price_input = CTkEntry(master=self,placeholder_text="Max $",width=40)
+        self.searchButton = CTkButton(master=self,text="Search",command=self.read_inputs)
         self.refresh = CTkButton(master=self,text="\u27F3",width=20)
-        # self.itemContainer = CTkFrame(master=self,width=630,height=420,corner_radius=10,border_color="darkgrey",border_width=3)
-        self.tabView = CTkTabview(master=self,width=630,height=420,corner_radius=10,border_color="darkgrey",border_width=3)
-        self.tabView.grid(column=1,row=7)
 
+        self.addCityInput = CTkEntry(master=self,placeholder_text="Remember City")
+        self.addCityButton = CTkButton(master=self,text="Save",command=self.save_city)
+
+        self.tabView = CTkTabview(master=self,width=630,height=420,corner_radius=10,border_color="darkgrey",border_width=3)
+
+        
         self.recTab = self.tabView.add("Suggested")
         self.saveTab = self.tabView.add("Saved")
+
+        print(self.recTab.winfo_width())
+        print(self.tabView.winfo_width())
+
+        self.sFrame = ScrollableFrame(self.recTab)    
+
        # ... create widgets ...
     def read_inputs(self):
-        city = self.city_input.get()
         add_city(dest=self.city_input.get(),dateFrom=self.dateFrom.get(),dateTo=self.dateTo.get(),price=self.price_input.get())
+    def save_city(self):
+        DataManager.add_city(self.addCityInput.get())
+
     def position(self):
-        # self.label.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
-        # self.city_input.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
-        self.tabView.grid(column=1,row=1,rowspan=8,columnspan=11,pady=10,padx=10)
-        self.dateFrom.grid(column=1,row=9,columnspan=2)
-        self.dateTo.grid(column=3,row=9, columnspan=2)
-        self.city_input.grid(column=5,row=9,columnspan=2)
-        self.price_input.grid(column=7,row=9,columnspan=1)
-        self.searchButton.grid(column=3,row=10,columnspan=4,pady=20)
+        self.tabView.grid(column=1,row=1,rowspan=8,columnspan=11,pady=10)
+        self.dateFrom.grid(column=2,row=9,columnspan=1)
+        self.dateTo.grid(column=3,row=9, columnspan=1)
+        self.city_input.grid(column=5,row=9,columnspan=3)
+        self.price_input.grid(column=8,row=9,columnspan=1)
+        self.searchButton.grid(column=9,row=9,columnspan=2,padx=10)
         self.refresh.grid(column=7,row=10,padx=5,pady=20)
-    def add_flight_element(self,row):
-        flightFrame = CTkFrame(master=self,width=570,height=70,corner_radius=10,border_width=1,border_color="black",fg_color="lightgray")
 
-        datefromLabel = CTkLabel(master=self,text="Random text",bg_color="lightgrey")
-        datetoLabel = CTkLabel(master=self,text="Random text",bg_color="lightgrey")
-        cityLabel = CTkLabel(master=self,text="Random text",bg_color="lightgrey")
-        priceLabel = CTkLabel(master=self,text="Random text",bg_color="lightgrey")
+        self.addCityInput.grid(column=3,row=10,columnspan=2,padx=10)
+        self.addCityButton.grid(column=5,row=10,columnspan=2,padx=10)
+
+    def add_flight_element(self,row,flightData):
+        flightFrame = CTkFrame(master=self.sFrame.scrollable_frame,width=800,height=140,corner_radius=10,border_width=1,border_color="black",fg_color="lightgray")
+        airlineFrame = CTkFrame(master=flightFrame,width=50,height=50,corner_radius=5,border_width=1,border_color="darkgray",fg_color="lightgray")
+
+        row += 2
+        airline = CTkLabel(master=airlineFrame,text=flightData["airlines"][0],bg_color="lightgrey")
+
+        datefromLabel = CTkLabel(master=flightFrame,text=flightData["path"][0][1],bg_color="lightgrey")
+        datetoLabel = CTkLabel(master=flightFrame,text=flightData["path"][-1][0],bg_color="lightgrey")
+        cityLabel = CTkLabel(master=flightFrame,text=flightData["cityTo"],bg_color="lightgrey")
+        priceLabel = CTkLabel(master=flightFrame,text=f'${flightData["price"]}',bg_color="lightgrey")
+
+        flightFrame.pack(pady=5)
+        airline.pack()
+ 
+        airlineFrame.grid(column=2,row=row,padx=8,columnspan=2)
+        datefromLabel.grid(column=4,row=row,padx=5,columnspan=2)
+        datetoLabel.grid(column=6,row=row,padx=5,columnspan=2)
+        cityLabel.grid(column=8,row=row,padx=5)
+        priceLabel.grid(column=9,row=row,padx=5)
+
+        def expand_flight(event):
+            FlightInfo(flightData)
+
+        flightFrame.bind("<Button-1>",expand_flight)
+        # airlineFrame.bind("<Button-1>",expand_flight)
+
+class FlightInfo(CTkToplevel):
+    def __init__(self,flightData):
+        super().__init__()
+        self.geometry(f"{600}x{600}")
+        self.config(padx=50,pady=25)
+        self.title("Flight Info")
+
+        self.header = CTkFrame(master=self,bg_color="lightgrey",width=200,height=100)
+
+        self.header.grid(row=0,column=4,columnspan=5,rowspan=2)
+
+
+        datefromLabel = CTkLabel(master=self.header,text=flightData["path"][0][1])
+        datetoLabel = CTkLabel(master=self.header,text=flightData["path"][-1][0])
+        cityLabel = CTkLabel(master=self.header,text=flightData["cityTo"])
+        priceLabel = CTkLabel(master=self.header,text=f'${flightData["price"]}')
+
+        datefromLabel.pack(side=LEFT,padx=5)
+        datetoLabel.pack(side=LEFT,padx=5)
+        cityLabel.pack(side=LEFT,padx=5)
+        priceLabel.pack(side=LEFT,padx=5)
+
+        for i,route in enumerate(flightData["path"]):
+            routeFrame = CTkFrame(master=self,width=200,height=100,bg_color="lightgrey")
+            routeFrame.grid(column=2,row=i+2,columnspan=10,pady=10)
+            for item in route:
+                routeLabel = CTkLabel(master=routeFrame,text=item)
+                routeLabel.pack(side=LEFT,padx=5)
+            
 
 
 
-        flightFrame.grid(column=1,row=row,padx=5,pady=5,columnspan=8)
-        datefromLabel.grid(column=1,row=row,padx=5,pady=5,columnspan=2)
-        datetoLabel.grid(column=3,row=row,padx=5,pady=5,columnspan=2)
-        cityLabel.grid(column=6,row=row,padx=5,pady=5)
-        priceLabel.grid(column=7,row=row,padx=5,pady=5)
-
-
-        # self.dateFrom.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
-   # ... program methods ...
+ 
 
 
 def startGUI():
+    #Will need multithreading to fully optimize
     app = App()
     app.position()
+    organizedFlightData = load_cheapest()
+    for i,flight in enumerate(organizedFlightData):
+        app.add_flight_element(i,flight)
     app.mainloop()
+
+
+    
 
 startGUI()
