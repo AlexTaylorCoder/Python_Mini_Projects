@@ -3,6 +3,7 @@ import os
 import requests
 import datetime as dt
 from dotenv import load_dotenv
+CURRENCY = "USD"
 
 load_dotenv()
 SEARCH_ENDPOINT = "https://api.tequila.kiwi.com/v2/search"
@@ -48,7 +49,9 @@ class FlightSearch:
             "nights_in_dst_to":30,
             "price_to":price,
             "flight_type":"round",
-            "limit":10
+            "limit":10,
+            "curr": CURRENCY
+
         }
 
         response = requests.get(SEARCH_ENDPOINT,headers=headers,params=params)
@@ -76,7 +79,8 @@ class FlightSearch:
             "nights_in_dst_to":30,
             "price_to":2000,
             "flight_type":"round",
-            "limit":limit
+            "limit":limit,
+            "curr": CURRENCY
         }
 
         response = requests.get(SEARCH_ENDPOINT,headers=headers,params=params)

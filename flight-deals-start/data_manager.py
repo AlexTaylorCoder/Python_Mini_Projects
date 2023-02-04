@@ -5,9 +5,14 @@ import requests
 from datetime import datetime
 
 ENDPOINT = "https://api.sheety.co/a3e86da06554d3c95d2a951fe66f4bcd/flightTrackerInfo/sheet1"
+SAVEDENDPOINT = "https://api.sheety.co/a3e86da06554d3c95d2a951fe66f4bcd/flightTrackerSaved/sheet1"
 class DataManager:
     def get():
         response = requests.get(ENDPOINT)
+        response.raise_for_status()
+        return response.json()["sheet1"]
+    def get_saved():
+        response = requests.get(SAVEDENDPOINT)
         response.raise_for_status()
         return response.json()["sheet1"]
     def cityPresence(name):
@@ -49,8 +54,7 @@ class DataManager:
         sheet = DataManager.get()
         for row,item in enumerate(sheet):
             if item["iataCode"] == code:
-                DataManager.patch_content(row,price,depart,arrive)
-                
+                DataManager.patch_content(row,price,depart,arrive)        
 
     def update_price_all():
         DataManager.add_iata()
@@ -72,8 +76,24 @@ class DataManager:
                     DataManager.patch_code(i,code)
                 else:
                     DataManager.delete(i)
-    def post(self,content):
-        pass
+    def post_from_gui_saved_flights(cityTo,dateFrom,dateTo,price):
+        print(cityTo,dateFrom,dateTo,price)
+        body = {
+            "sheet1": {
+                "city":cityTo,
+                "lowestPrice": price,
+                "dateDeparture":dateFrom,
+                "dateReturn":dateTo,
+            }
+        }
+        response = requests.post(SAVEDENDPOINT,json=body)
+        try:
+            response.raise_for_status()
+        except:
+            return False
+        else:
+            return True
+    
 
     def delete(row):
         response = requests.delete(f"{ENDPOINT}/{row+2}")
