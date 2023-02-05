@@ -8,11 +8,14 @@ from flightInfo import FlightInfo
 set_appearance_mode("System")
 set_default_color_theme("blue")
 
+FLIGHT_ELEMENT_FONT = ("Arial", 25)
+
 # class scrollTabView(CTkTabview):
 #     def __init__(self):
 #         super().__init__()
 #         self.sFrame = ScrollableFrame(self)    
 
+#GUI Need to be refactored
 
 class App(CTk):
     def __init__(self):
@@ -43,9 +46,6 @@ class App(CTk):
         self.recTab = self.tabView.add("Suggested")
         self.saveTab = self.tabView.add("Saved")
 
-        print(self.recTab.winfo_width())
-        print(self.tabView.winfo_width())
-
         self.sFrame = ScrollableFrame(self.recTab)    
         self.rFrame = ScrollableFrame(self.saveTab)
 
@@ -74,50 +74,53 @@ class App(CTk):
         self.addCityButton.grid(column=5,row=10,columnspan=2,padx=10)
     def add_flight_element_from_spreadsheet(self,row,sheetData):
         #Remove from flight sheet also
-        flightFrame = CTkFrame(master=self.rFrame.scrollable_frame,width=600,height=400,corner_radius=10,border_width=1,border_color="black",fg_color="lightgray")
-
+        flightFrame = CTkFrame(master=self.rFrame.scrollable_frame,width=600,height=400,corner_radius=10,border_width=1,border_color="black",bg_color="lightgray")
+        dataRow = row
         row += 2
 
-        datefromLabel = CTkLabel(master=flightFrame,text=sheetData["dateDeparture"],bg_color="lightgrey")
-        datetoLabel = CTkLabel(master=flightFrame,text=sheetData["dateReturn"],bg_color="lightgrey")
-        cityLabel = CTkLabel(master=flightFrame,text=sheetData["city"],bg_color="lightgrey")
-        priceLabel = CTkLabel(master=flightFrame,text=f'${sheetData["lowestPrice"]}',bg_color="lightgrey")
-        removeButton = CTkButton(master=flightFrame,text="Remove")
+        
+        def remove_flight():
+            flightFrame.destroy()
+            DataManager.remove_saved_row(row=row)
+
+
+        datefromLabel = CTkLabel(master=flightFrame,text=sheetData["dateDeparture"],bg_color="lightgrey",font=FLIGHT_ELEMENT_FONT)
+        datetoLabel = CTkLabel(master=flightFrame,text=sheetData["dateReturn"],bg_color="lightgrey",font=FLIGHT_ELEMENT_FONT)
+        cityLabel = CTkLabel(master=flightFrame,text=sheetData["city"],bg_color="lightgrey",font=FLIGHT_ELEMENT_FONT)
+        priceLabel = CTkLabel(master=flightFrame,text=f'${sheetData["lowestPrice"]}',bg_color="lightgrey",font=FLIGHT_ELEMENT_FONT)
+        removeButton = CTkButton(master=flightFrame,text="Remove",command=remove_flight)
 
         flightFrame.pack(pady=5)
+        flightFrame.pack_propagate(0)
  
-        datefromLabel.grid(column=2,row=row,padx=5,columnspan=2)
-        datetoLabel.grid(column=4,row=row,padx=5,columnspan=2)
-        cityLabel.grid(column=6,row=row,padx=5)
-        priceLabel.grid(column=8,row=row,padx=5)
-        removeButton.grid(column=9,columnspan=2)
+        datefromLabel.grid(column=2,row=row,padx=5,columnspan=2,pady=10)
+        datetoLabel.grid(column=4,row=row,padx=5,columnspan=2,pady=10)
+        cityLabel.grid(column=6,row=row,padx=5,pady=10)
+        priceLabel.grid(column=8,row=row,padx=5,pady=10)
+        removeButton.grid(column=9,columnspan=2,pady=10)
 
-        def remove_flight(event):
-            pass
 
     def add_flight_element(self,row,flightData):
-        flightFrame = CTkFrame(master=self.sFrame.scrollable_frame,width=600,height=400,corner_radius=10,border_width=1,border_color="black",fg_color="lightgray")
+        flightFrame = CTkFrame(master=self.sFrame.scrollable_frame,width=600,height=200,corner_radius=10,border_width=1,border_color="black",bg_color="lightgray")
         airlineFrame = CTkFrame(master=flightFrame,width=50,height=50,corner_radius=5,border_width=1,border_color="darkgray",fg_color="lightgray")
 
         row += 2
-        # if "airlines" in flightData:
-        #     airline = CTkLabel(master=airlineFrame,text=flightData["airlines"][0],bg_color="lightgrey")
-        #     airline.pack()
-        # else:
-        #     print(flightData)
 
-        datefromLabel = CTkLabel(master=flightFrame,text=flightData["path"][0][1],bg_color="lightgrey")
-        datetoLabel = CTkLabel(master=flightFrame,text=flightData["path"][-1][0],bg_color="lightgrey")
-        cityLabel = CTkLabel(master=flightFrame,text=flightData["cityTo"],bg_color="lightgrey")
-        priceLabel = CTkLabel(master=flightFrame,text=f'${flightData["price"]}',bg_color="lightgrey")
+        airline = CTkLabel(master=airlineFrame,text=flightData["airlines"][0],bg_color="lightgrey",font=("Arial", 25,"bold"))
+        datefromLabel = CTkLabel(master=flightFrame,text=flightData["path"][0][1],bg_color="lightgrey",font=FLIGHT_ELEMENT_FONT)
+        datetoLabel = CTkLabel(master=flightFrame,text=flightData["path"][-1][0],bg_color="lightgrey",font=FLIGHT_ELEMENT_FONT)
+        cityLabel = CTkLabel(master=flightFrame,text=flightData["cityTo"],bg_color="lightgrey",font=FLIGHT_ELEMENT_FONT)
+        priceLabel = CTkLabel(master=flightFrame,text=f'${flightData["price"]}',bg_color="lightgrey",font=FLIGHT_ELEMENT_FONT)
 
-        flightFrame.pack(pady=5)
+        airline.pack(fill=BOTH,expand=True)
+        flightFrame.pack(pady=5,padx=5)
+        # flightFrame.pack_propagate(0)
  
-        airlineFrame.grid(column=2,row=row,padx=8,columnspan=2)
-        datefromLabel.grid(column=4,row=row,padx=5,columnspan=2)
-        datetoLabel.grid(column=6,row=row,padx=5,columnspan=2)
-        cityLabel.grid(column=8,row=row,padx=5)
-        priceLabel.grid(column=9,row=row,padx=5)
+        airlineFrame.grid(column=2,row=row,padx=8,columnspan=2,pady=15)
+        datefromLabel.grid(column=4,row=row,padx=5,columnspan=2,pady=15)
+        datetoLabel.grid(column=6,row=row,padx=5,columnspan=2,pady=15)
+        cityLabel.grid(column=8,row=row,padx=5,rowspan=3,pady=15)
+        priceLabel.grid(column=9,row=row,padx=5,rowspan=3,pady=15)
 
         def expand_flight(event):
             FlightInfo(flightData)

@@ -44,10 +44,7 @@ def simplifyFlightData(flightData):
     return flights
 
 def load_cheapest():
-    print("ran")
     flightData = FlightSearch.search_cheapest_flights(fly_from="NYC")
-    print("ran")
-
     return simplifyFlightData(flightData)
 
 

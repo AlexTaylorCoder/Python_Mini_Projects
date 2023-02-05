@@ -5,7 +5,7 @@ import requests
 from datetime import datetime
 
 ENDPOINT = "https://api.sheety.co/a3e86da06554d3c95d2a951fe66f4bcd/flightTrackerInfo/sheet1"
-SAVEDENDPOINT = "https://api.sheety.co/a3e86da06554d3c95d2a951fe66f4bcd/flightTrackerSaved/sheet1"
+SAVEDENDPOINT = "https://api.sheety.co/a3e86da06554d3c95d2a951fe66f4bcd/flightTrackerSaved/sheet1/"
 class DataManager:
     def get():
         response = requests.get(ENDPOINT)
@@ -17,7 +17,6 @@ class DataManager:
         return response.json()["sheet1"]
     def cityPresence(name):
         for row,item in enumerate(DataManager.get()):
-            print(item)
             if item["city"] == name:
                 return row
         return False
@@ -65,8 +64,6 @@ class DataManager:
             if flightData:
                 cheapest = flightData[0]
                 DataManager.patch_content(row,cheapest["price"],depart=format_date(cheapest["route"][0]["local_departure"]),arrive=format_date(cheapest["route"][-1]["local_arrival"]))
-
-
     def add_iata():
         sheet = DataManager.get()
         for i,item in enumerate(sheet):
@@ -76,14 +73,14 @@ class DataManager:
                     DataManager.patch_code(i,code)
                 else:
                     DataManager.delete(i)
-    def post_from_gui_saved_flights(cityTo,dateFrom,dateTo,price):
-        print(cityTo,dateFrom,dateTo,price)
+    def post_from_gui_saved_flights(cityTo,dateFrom,dateTo,price,link):
         body = {
             "sheet1": {
                 "city":cityTo,
                 "lowestPrice": price,
                 "dateDeparture":dateFrom,
                 "dateReturn":dateTo,
+                "link":link
             }
         }
         response = requests.post(SAVEDENDPOINT,json=body)
@@ -93,7 +90,15 @@ class DataManager:
             return False
         else:
             return True
-    
+    def remove_saved_row(row):
+        #first find row then delete
+        response = requests.delete(f"{SAVEDENDPOINT}/{row}")
+
+    def find_row_by(param,query,data):
+        for i,item in enumerate(data):
+            if item[param] == query:
+                return i + 2
+        return False
 
     def delete(row):
         response = requests.delete(f"{ENDPOINT}/{row+2}")
